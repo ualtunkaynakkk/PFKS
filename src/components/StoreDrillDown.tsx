@@ -2,10 +2,9 @@ import { useState } from 'react';
 import { motion } from 'motion/react';
 import {
   ClipboardCheck, AlertTriangle, FileText, MousePointerClick,
-  CheckCircle2, Clock, Brain, Loader2, ChevronDown, ChevronUp
+  CheckCircle2, Clock, ChevronDown, ChevronUp
 } from 'lucide-react';
 import type { StoreData, Action } from '../types';
-import { analyzeStore } from '../services/gemini';
 import { KPI_WEIGHTS } from '../data/stores';
 
 interface StoreDrillDownProps {
@@ -18,30 +17,7 @@ interface StoreDrillDownProps {
 }
 
 export function StoreDrillDown({ store, index, actions, onNewAction, onPrint, onCloseAction }: StoreDrillDownProps) {
-  const [aiAnalysis, setAiAnalysis] = useState<string>('');
-  const [aiLoading, setAiLoading] = useState(false);
   const [showWeights, setShowWeights] = useState(false);
-
-  const handleAiAnalysis = async () => {
-    setAiLoading(true);
-    setAiAnalysis('');
-    try {
-      const result = await analyzeStore({
-        code: store.code,
-        name: store.name,
-        ciroGerc: store.ciroGerc,
-        conversion: store.conversion,
-        upt: store.upt,
-        yds: store.yds,
-        status: store.status,
-      });
-      setAiAnalysis(result);
-    } catch {
-      setAiAnalysis('AI analizi şu an kullanılamıyor. Lütfen API anahtarınızı kontrol edin.');
-    } finally {
-      setAiLoading(false);
-    }
-  };
 
   return (
     <div className="bg-panel flex flex-col border-l border-border overflow-hidden">
@@ -90,7 +66,7 @@ export function StoreDrillDown({ store, index, actions, onNewAction, onPrint, on
           </div>
         </div>
 
-        {/* Endeks Formülü — şeffaf */}
+        {/* Endeks Formülü */}
         <div className="border border-border rounded overflow-hidden">
           <button
             onClick={() => setShowWeights(v => !v)}
@@ -196,32 +172,8 @@ export function StoreDrillDown({ store, index, actions, onNewAction, onPrint, on
           </p>
         </div>
 
-        {/* AI Analysis */}
-        {aiAnalysis && (
-          <motion.div
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="bg-blue-50 border border-blue-200 p-4 rounded-sm"
-          >
-            <div className="text-[9px] font-black text-accent mb-2 flex items-center gap-1.5">
-              <Brain className="w-3 h-3" /> AI MAĞAZA ANALİZİ
-            </div>
-            <p className="text-[11px] leading-relaxed text-slate-700">{aiAnalysis}</p>
-          </motion.div>
-        )}
-
-        {/* Buttons */}
-        <div className="space-y-2 pb-2">
-          <button
-            onClick={handleAiAnalysis}
-            disabled={aiLoading}
-            className="w-full py-2.5 bg-slate-700 text-white font-bold text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-slate-900 transition-all rounded active:scale-95 disabled:opacity-60"
-          >
-            {aiLoading
-              ? <><Loader2 className="w-3.5 h-3.5 animate-spin" /> AI Analiz Yapılıyor...</>
-              : <><Brain className="w-3.5 h-3.5" /> AI ile Mağaza Analizi Yap</>
-            }
-          </button>
+        {/* Action Button */}
+        <div className="pb-2">
           <button
             onClick={onNewAction}
             className="w-full py-2.5 bg-ink text-white font-bold text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-accent transition-all rounded active:scale-95"

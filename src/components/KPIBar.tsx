@@ -1,5 +1,3 @@
-import { Brain, Loader2 } from 'lucide-react';
-
 interface KPIBarProps {
   avgCiro: number;
   avgConversion: string;
@@ -56,27 +54,5 @@ export function KPIBar({ avgCiro, avgConversion, avgUpt, openCount, closureRate 
         </div>
       ))}
     </section>
-  );
-}
-
-// AI Analiz butonu — store drill-down içinde kullanılır
-interface AIAnalysisButtonProps {
-  onClick: () => void;
-  loading: boolean;
-}
-
-export function AIAnalysisButton({ onClick, loading }: AIAnalysisButtonProps) {
-  return (
-    <button
-      onClick={onClick}
-      disabled={loading}
-      className="w-full py-2.5 bg-slate-800 text-white font-bold text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-accent transition-all hover:shadow-lg rounded active:scale-95 disabled:opacity-60"
-    >
-      {loading ? (
-        <><Loader2 className="w-3.5 h-3.5 animate-spin" /> AI Analiz Yapılıyor...</>
-      ) : (
-        <><Brain className="w-3.5 h-3.5" /> AI ile Mağaza Analizi Yap</>
-      )}
-    </button>
   );
 }
