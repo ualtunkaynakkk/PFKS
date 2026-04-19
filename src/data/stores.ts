@@ -36,6 +36,7 @@ export const STORES: StoreData[] = [
     yds: 9.2, personnelEfficiency: '₺4.8k / saat', stockAccuracy: 98.5,
     visitFrequency: 3,
     managerNote: 'Nişantaşı ekibi dönüşümde bölge lideri. Vitrin rotasyonu satışları destekliyor.',
+    isActive: true,
   },
   {
     id: '2', code: 'M201', name: 'BAĞDAT CAD.', segment: 'A+', region: 'Asya',
@@ -43,6 +44,7 @@ export const STORES: StoreData[] = [
     yds: 8.5, personnelEfficiency: '₺4.1k / saat', stockAccuracy: 96.0,
     visitFrequency: 2,
     managerNote: 'Cadde trafiği stabil. Hafta sonu seanslarına odaklanılmalı.',
+    isActive: true,
   },
   {
     id: '3', code: 'M305', name: 'İSTİNYE PARK', segment: 'A+', region: 'Merkez',
@@ -50,6 +52,7 @@ export const STORES: StoreData[] = [
     yds: 7.8, personnelEfficiency: '₺5.2k / saat', stockAccuracy: 92.4,
     visitFrequency: 2,
     managerNote: 'AVM trafiği artmasına rağmen sepet ortalaması geride kaldı. Cross-sell eğitimi planlanmalı.',
+    isActive: true,
   },
   {
     id: '4', code: 'M402', name: 'ZORLU CENTER', segment: 'A+', region: 'Merkez',
@@ -57,6 +60,7 @@ export const STORES: StoreData[] = [
     yds: 6.2, personnelEfficiency: '₺4.2k / saat', stockAccuracy: 94.2,
     visitFrequency: 2,
     managerNote: 'Zorlu mağazasında dönüşüm oranı kritik seviyede. Yarın sabah seansında karşılama disiplini için yerinde denetim yapılacak.',
+    isActive: true,
   },
   {
     id: '5', code: 'M108', name: 'EMAAR SQUARE', segment: 'A', region: 'Asya',
@@ -64,6 +68,7 @@ export const STORES: StoreData[] = [
     yds: 7.4, personnelEfficiency: '₺3.8k / saat', stockAccuracy: 95.1,
     visitFrequency: 1,
     managerNote: 'Emaar mağazasında personel eksikliği verimliliği düşürüyor.',
+    isActive: true,
   },
   {
     id: '6', code: 'M212', name: 'VADİ İSTANBUL', segment: 'A', region: 'Merkez',
@@ -71,6 +76,7 @@ export const STORES: StoreData[] = [
     yds: 8.1, personnelEfficiency: '₺4.5k / saat', stockAccuracy: 97.2,
     visitFrequency: 2,
     managerNote: 'Vadi performansı istikrarlı gidiyor. Stok yönetimi başarılı.',
+    isActive: true,
   },
   {
     id: '7', code: 'M315', name: 'AKASYA AVM', segment: 'A', region: 'Asya',
@@ -78,6 +84,7 @@ export const STORES: StoreData[] = [
     yds: 7.6, personnelEfficiency: '₺3.9k / saat', stockAccuracy: 93.8,
     visitFrequency: 2,
     managerNote: 'Akasya\'da trafik yoğun ancak dönüşüm baskı altında. Karşılama hattı güçlendirilmeli.',
+    isActive: true,
   },
   {
     id: '8', code: 'M520', name: 'FORUM ANADOLU', segment: 'B', region: 'Anadolu',
@@ -85,6 +92,7 @@ export const STORES: StoreData[] = [
     yds: 8.8, personnelEfficiency: '₺3.5k / saat', stockAccuracy: 96.7,
     visitFrequency: 2,
     managerNote: 'Forum Anadolu tutarlı performans sergiliyor. Sepet ortalaması bölge üzerinde.',
+    isActive: true,
   },
 ];
 
@@ -142,3 +150,11 @@ export const getDailySlots = (storeId: string): DailySlot[] => {
     { time: '16:00 - 18:00', actual: null, target: targets[3] },
   ];
 };
+
+// Durum otomatik türetme — KPI değerlerine göre
+export function deriveStatus(ciroGerc: number, yds: number, conversion: number): import('../types').StoreStatus {
+  if (ciroGerc >= 105 && yds >= 8.5) return 'success';
+  if (ciroGerc < 85 || yds < 6.5 || conversion < 15) return 'danger';
+  if (ciroGerc < 95 || yds < 7.5 || conversion < 17) return 'warning';
+  return 'stable';
+}

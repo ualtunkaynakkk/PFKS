@@ -45,3 +45,15 @@
     opacity: .3;
   }
 }
+
+@layer components {
+  .label {
+    @apply text-[10px] font-bold text-slate-400 uppercase mb-1 block;
+  }
+  .input {
+    @apply w-full border border-border p-2.5 rounded text-xs outline-none focus:ring-2 focus:ring-accent transition-all bg-white;
+  }
+  .err {
+    @apply text-[10px] text-danger mt-1;
+  }
+}

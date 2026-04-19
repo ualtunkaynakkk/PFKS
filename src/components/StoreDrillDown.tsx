@@ -14,9 +14,10 @@ interface StoreDrillDownProps {
   onNewAction: () => void;
   onPrint: () => void;
   onCloseAction: (id: string) => void;
+  onKPIUpdate: () => void;
 }
 
-export function StoreDrillDown({ store, index, actions, onNewAction, onPrint, onCloseAction }: StoreDrillDownProps) {
+export function StoreDrillDown({ store, index, actions, onNewAction, onPrint, onCloseAction, onKPIUpdate }: StoreDrillDownProps) {
   const [showWeights, setShowWeights] = useState(false);
 
   return (
@@ -173,7 +174,13 @@ export function StoreDrillDown({ store, index, actions, onNewAction, onPrint, on
         </div>
 
         {/* Action Button */}
-        <div className="pb-2">
+        <div className="space-y-2 pb-2">
+          <button
+            onClick={onKPIUpdate}
+            className="w-full py-2.5 bg-slate-100 text-ink font-bold text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-slate-200 transition-all rounded active:scale-95 border border-border"
+          >
+            <span>📊</span> KPI Verilerini Güncelle
+          </button>
           <button
             onClick={onNewAction}
             className="w-full py-2.5 bg-ink text-white font-bold text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-accent transition-all rounded active:scale-95"
