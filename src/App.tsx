@@ -39,8 +39,8 @@ export default function App() {
     setTimeout(() => setToast(null), 3500);
   };
 
-  const handleSaveAction = (form: NewActionForm) => {
-    addAction(form, selectedStoreId);
+  const handleSaveAction = async (form: NewActionForm) => {
+    await addAction(form, selectedStoreId);
     setActiveModal('none');
     showToast(`Aksiyon kaydedildi — ${selectedStore.name} mağazasına iletildi.`);
   };
@@ -50,14 +50,14 @@ export default function App() {
     showToast(`Müdahale talimatı gönderildi${note ? ` — ${note.slice(0, 50)}` : ''}`);
   };
 
-  const handleCloseAction = (id: string) => {
-    closeAction(id);
+  const handleCloseAction = async (id: string) => {
+    await closeAction(id);
     showToast('Aksiyon kapatıldı.');
   };
 
-  const handleKPIUpdate = (form: KPIUpdateForm) => {
-    updateKPI(selectedStoreId, form);
-    addKpiSnapshot({
+  const handleKPIUpdate = async (form: KPIUpdateForm) => {
+    await updateKPI(selectedStoreId, form);
+    await addKpiSnapshot({
       storeId: selectedStoreId,
       date: new Date().toISOString().split('T')[0],
       ...form,

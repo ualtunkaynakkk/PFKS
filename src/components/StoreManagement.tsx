@@ -147,10 +147,10 @@ function StoreFormPanel({ initial = EMPTY_FORM, title, onSave, onCancel }: Store
 
 interface StoreManagementProps {
   stores: StoreData[];
-  onAdd: (f: StoreForm) => void;
-  onEdit: (id: string, f: Partial<StoreData>) => void;
-  onRemove: (id: string) => void;
-  onRestore: (id: string) => void;
+  onAdd: (f: StoreForm) => Promise<unknown>;
+  onEdit: (id: string, f: Partial<StoreData>) => Promise<void>;
+  onRemove: (id: string) => Promise<void>;
+  onRestore: (id: string) => Promise<void>;
   showToast: (msg: string) => void;
 }
 
