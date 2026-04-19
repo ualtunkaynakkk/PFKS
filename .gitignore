@@ -1,8 +1,31 @@
+# Dependencies
 node_modules/
-build/
+.pnp
+.pnp.js
+
+# Build output
 dist/
-coverage/
+dist-ssr/
+
+# Environment — ASLA COMMIT ETME
+.env
+.env.local
+.env.*.local
+.env.production
+
+# Editor
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# OS
 .DS_Store
+Thumbs.db
+
+# Logs
 *.log
-.env*
-!.env.example
+npm-debug.log*
