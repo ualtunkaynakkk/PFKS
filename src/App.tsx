@@ -124,7 +124,27 @@ export default function App() {
     );
   }
 
-  // Stores yüklendi ama selectedStore henüz seçilmedi (useEffect henüz çalışmadı)
+  // Stores yüklendi ama aktif mağaza yok
+  if (activeStores.length === 0) {
+    return (
+      <div className="flex flex-col h-screen bg-bg">
+        <header className="h-[50px] bg-ink text-white flex items-center px-5 border-b-2 border-accent shrink-0">
+          <Activity className="w-5 h-5 text-accent mr-3" />
+          <h1 className="text-sm font-bold tracking-widest uppercase">PFKS</h1>
+        </header>
+        <div className="flex-1 flex flex-col items-center justify-center gap-3 p-6 text-center">
+          <p className="text-sm font-bold text-slate-600">Aktif mağaza bulunamadı</p>
+          <p className="text-xs text-slate-400">Tüm mağazalar pasif durumda. Mağaza Yönetimi'nden aktif edin.</p>
+          <button onClick={() => window.location.reload()}
+            className="mt-2 px-4 py-2 bg-accent text-white text-xs font-bold rounded uppercase">
+            Yenile
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Stores yüklendi ama selectedStore henüz seçilmedi (useEffect bir sonraki tick'te çalışır)
   if (!selectedStore) {
     return (
       <div className="flex flex-col h-screen bg-bg">
