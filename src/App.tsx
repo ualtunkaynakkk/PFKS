@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
-import { Activity, LayoutDashboard, Store, Activity as TrackIcon } from 'lucide-react';
+import { Activity, LayoutDashboard, Store, Activity as TrackIcon, Loader2 } from 'lucide-react';
 
 import type { RegionFilter, TabType, ModalType, NewActionForm, AppView, KPIUpdateForm } from './types';
 import { getDailySlots } from './data/stores';
@@ -23,7 +23,7 @@ export default function App() {
   const [regionFilter, setRegionFilter] = useState<RegionFilter>('Tümü');
   const [toast, setToast] = useState<string | null>(null);
 
-  const { stores, filteredStores, regionSummary, calcIndex, addStore, updateStore, updateKPI, removeStore, restoreStore } = useStores(regionFilter);
+  const { stores, filteredStores, regionSummary, loading: storesLoading, error: storesError, calcIndex, addStore, updateStore, updateKPI, removeStore, restoreStore } = useStores(regionFilter);
   const { storeActions, allActions, openCount, closureRate, addAction, closeAction } = useActions(selectedStoreId);
   const { allLogs, kpiSnapshots, getStoreLogs, getStoreSnapshots, addVisitLog, addKpiSnapshot } = useVisitLogs();
 
@@ -71,6 +71,44 @@ export default function App() {
     { id: 'stores' as AppView, label: 'Mağaza Yönetimi', icon: Store },
     { id: 'tracking' as AppView, label: 'Takip & Geçmiş', icon: TrackIcon },
   ];
+
+
+  // Loading ekranı
+  if (storesLoading) {
+    return (
+      <div className="flex flex-col h-screen overflow-hidden bg-bg">
+        <header className="h-[50px] bg-ink text-white flex items-center px-5 border-b-2 border-accent shrink-0">
+          <Activity className="w-5 h-5 text-accent mr-3" />
+          <h1 className="text-sm font-bold tracking-widest uppercase">
+            PFKS <span className="text-accent opacity-50 mx-1">//</span>
+            <span className="font-normal opacity-80 text-xs">Penti Bölge Yönetim Paneli</span>
+          </h1>
+        </header>
+        <div className="flex-1 flex flex-col items-center justify-center gap-4">
+          <Loader2 className="w-8 h-8 text-accent animate-spin" />
+          <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Veriler yükleniyor...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (storesError) {
+    return (
+      <div className="flex flex-col h-screen overflow-hidden bg-bg">
+        <header className="h-[50px] bg-ink text-white flex items-center px-5 border-b-2 border-accent shrink-0">
+          <Activity className="w-5 h-5 text-accent mr-3" />
+          <h1 className="text-sm font-bold tracking-widest uppercase">PFKS</h1>
+        </header>
+        <div className="flex-1 flex flex-col items-center justify-center gap-3">
+          <p className="text-sm font-bold text-danger">Bağlantı hatası</p>
+          <p className="text-xs text-slate-400">{storesError}</p>
+          <button onClick={() => window.location.reload()} className="px-4 py-2 bg-accent text-white text-xs font-bold rounded uppercase mt-2">
+            Yeniden Dene
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col h-screen overflow-hidden relative">
