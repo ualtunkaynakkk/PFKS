@@ -12,7 +12,7 @@ export type ModalType =
   | 'kpi_update';
 export type TabType = 'overview' | 'daily';
 export type RegionFilter = 'Tümü' | 'Merkez' | 'Asya' | 'Anadolu';
-export type AppView = 'dashboard' | 'stores' | 'tracking';
+export type AppView = 'dashboard' | 'stores' | 'tracking' | 'users';
 
 export interface Action {
   id: string;

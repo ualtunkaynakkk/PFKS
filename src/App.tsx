@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
-import { Activity, LayoutDashboard, Store, BarChart2, Loader2, LogOut, ShieldCheck } from 'lucide-react';
+import { Activity, LayoutDashboard, Store, BarChart2, Loader2, LogOut, ShieldCheck, Users } from 'lucide-react';
 
 import type { RegionFilter, TabType, ModalType, NewActionForm, AppView, KPIUpdateForm } from './types';
 import { getDailySlots } from './data/stores';
@@ -17,6 +17,7 @@ import { NewActionModal, InterventionModal, PrintPreviewModal } from './componen
 import { StoreManagement } from './components/StoreManagement';
 import { KPIUpdateModal } from './components/KPIUpdateModal';
 import { TrackingModule } from './components/TrackingModule';
+import { UserManagement } from './components/UserManagement';
 
 export default function App() {
   const { user, loading: authLoading, signOut } = useAuth();
@@ -290,6 +291,10 @@ function AuthenticatedApp({ user, role, signOut }: {
           />
         )}
 
+        {view === 'users' && role === 'admin' && (
+          <UserManagement showToast={showToast} />
+        )}
+
         {/* Yetkisiz erişim */}
         {(
           (view === 'stores' && !hasPermission(role, 'store_view')) ||
@@ -318,6 +323,7 @@ function AppHeader({ user, role, signOut, view, setView, openCount, total }: {
     { id: 'dashboard' as AppView, label: 'Dashboard',       icon: LayoutDashboard, permission: 'store_view' as const },
     { id: 'stores'   as AppView, label: 'Mağazalar',        icon: Store,            permission: 'store_view' as const },
     { id: 'tracking' as AppView, label: 'Takip',            icon: BarChart2,        permission: 'tracking_view' as const },
+    { id: 'users'    as AppView, label: 'Kullanıcılar',     icon: Users,            permission: 'user_manage' as const },
   ];
 
   return (

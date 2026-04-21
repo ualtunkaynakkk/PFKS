@@ -10,6 +10,21 @@ export function LoginPage() {
   const [showPass, setShowPass] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showReset, setShowReset] = useState(false);
+  const [resetEmail, setResetEmail] = useState('');
+  const [resetSent, setResetSent] = useState(false);
+  const [resetLoading, setResetLoading] = useState(false);
+
+  const handleReset = async () => {
+    if (!resetEmail) return;
+    setResetLoading(true);
+    const { supabase } = await import('../services/supabase');
+    await supabase.auth.resetPasswordForEmail(resetEmail, {
+      redirectTo: window.location.origin,
+    });
+    setResetSent(true);
+    setResetLoading(false);
+  };
 
   const handleSubmit = async () => {
     if (!email || !password) {
@@ -109,6 +124,12 @@ export function LoginPage() {
               </motion.div>
             )}
 
+            {/* Şifremi Unuttum */}
+            <button type="button" onClick={() => setShowReset(true)}
+              className="text-[10px] text-accent hover:underline text-center block w-full">
+              Şifremi unuttum
+            </button>
+
             {/* Submit */}
             <button
               onClick={handleSubmit}
@@ -123,6 +144,36 @@ export function LoginPage() {
             </button>
           </div>
         </div>
+
+        {/* Şifre Sıfırlama Modal */}
+        {showReset && (
+          <div className="mt-4 bg-white border border-border rounded-lg overflow-hidden">
+            <div className="px-4 py-3 border-b border-border bg-panel-header flex items-center justify-between">
+              <p className="text-[10px] font-bold text-slate-500 uppercase">Şifre Sıfırlama</p>
+              <button onClick={() => { setShowReset(false); setResetSent(false); }}
+                className="text-slate-400 hover:text-ink">
+                <span className="text-xs">✕</span>
+              </button>
+            </div>
+            <div className="p-4 space-y-3">
+              {resetSent ? (
+                <p className="text-xs text-success font-medium text-center py-2">
+                  ✓ Sıfırlama bağlantısı gönderildi. E-postanı kontrol et.
+                </p>
+              ) : (
+                <>
+                  <input type="email" value={resetEmail} onChange={e => setResetEmail(e.target.value)}
+                    placeholder="E-posta adresin"
+                    className="w-full border border-border rounded px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-accent" />
+                  <button onClick={handleReset} disabled={resetLoading || !resetEmail}
+                    className="w-full py-2 bg-accent text-white text-xs font-bold rounded uppercase flex items-center justify-center gap-2 disabled:opacity-60 hover:bg-blue-700">
+                    {resetLoading ? 'Gönderiliyor...' : 'Sıfırlama Bağlantısı Gönder'}
+                  </button>
+                </>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* Demo hesapları */}
         <div className="mt-5 bg-white border border-border rounded-lg overflow-hidden">
