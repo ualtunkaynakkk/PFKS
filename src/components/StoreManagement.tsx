@@ -146,6 +146,9 @@ function StoreFormPanel({ initial = EMPTY_FORM, title, onSave, onCancel }: Store
 }
 
 interface StoreManagementProps {
+  canAdd?: boolean;
+  canEdit?: boolean;
+  canDelete?: boolean;
   stores: StoreData[];
   onAdd: (f: StoreForm) => Promise<unknown>;
   onEdit: (id: string, f: Partial<StoreData>) => Promise<void>;
@@ -154,7 +157,7 @@ interface StoreManagementProps {
   showToast: (msg: string) => void;
 }
 
-export function StoreManagement({ stores, onAdd, onEdit, onRemove, onRestore, showToast }: StoreManagementProps) {
+export function StoreManagement({ stores, onAdd, onEdit, onRemove, onRestore, showToast, canAdd = false, canEdit = false, canDelete = false }: StoreManagementProps) {
   const [search, setSearch] = useState('');
   const [showInactive, setShowInactive] = useState(false);
   const [panel, setPanel] = useState<'none' | 'add' | string>('none');
@@ -184,10 +187,10 @@ export function StoreManagement({ stores, onAdd, onEdit, onRemove, onRestore, sh
             <input type="checkbox" checked={showInactive} onChange={e => setShowInactive(e.target.checked)} className="w-3 h-3" />
             Pasifleri Göster
           </label>
-          <button onClick={() => setPanel('add')}
+          {canAdd && <button onClick={() => setPanel('add')}
             className="px-3 py-1.5 bg-accent text-white text-[10px] font-bold rounded uppercase flex items-center gap-1.5 hover:bg-blue-700 transition-colors">
             <Plus className="w-3 h-3" /> Mağaza Ekle
-          </button>
+          </button>}
         </div>
       </div>
 
@@ -242,14 +245,14 @@ export function StoreManagement({ stores, onAdd, onEdit, onRemove, onRestore, sh
                     <div className="flex items-center gap-1">
                       {store.isActive ? (
                         <>
-                          <button onClick={() => setPanel(store.id)}
+                          {canEdit && <button onClick={() => setPanel(store.id)}
                             className="p-1.5 rounded hover:bg-blue-50 text-accent transition-colors" title="Düzenle">
                             <Pencil className="w-3 h-3" />
-                          </button>
-                          <button onClick={() => setDeleteConfirm(store.id)}
+                          </button>}
+                          {canDelete && <button onClick={() => setDeleteConfirm(store.id)}
                             className="p-1.5 rounded hover:bg-red-50 text-danger transition-colors" title="Pasife Al">
                             <Trash2 className="w-3 h-3" />
-                          </button>
+                          </button>}
                         </>
                       ) : (
                         <button onClick={() => { onRestore(store.id); showToast(`${store.name} mağazası aktif edildi.`); }}

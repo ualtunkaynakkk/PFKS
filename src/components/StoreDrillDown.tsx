@@ -5,6 +5,8 @@ import {
   CheckCircle2, Clock, ChevronDown, ChevronUp, BarChart2
 } from 'lucide-react';
 import type { StoreData, Action } from '../types';
+import type { PfksRole } from '../types/auth';
+import { hasPermission } from '../types/auth';
 import { KPI_WEIGHTS } from '../data/stores';
 
 interface StoreDrillDownProps {
@@ -15,9 +17,12 @@ interface StoreDrillDownProps {
   onPrint: () => void;
   onCloseAction: (id: string) => void;
   onKPIUpdate: () => void;
+  role?: PfksRole;
 }
 
-export function StoreDrillDown({ store, index, actions, onNewAction, onPrint, onCloseAction, onKPIUpdate }: StoreDrillDownProps) {
+export function StoreDrillDown({ store, index, actions, onNewAction, onPrint, onCloseAction, onKPIUpdate, role }: StoreDrillDownProps) {
+  const canAddAction = hasPermission(role, 'action_add');
+  const canKPI = hasPermission(role, 'kpi_update');
   const [showWeights, setShowWeights] = useState(false);
 
   return (
@@ -130,7 +135,7 @@ export function StoreDrillDown({ store, index, actions, onNewAction, onPrint, on
                       </span>
                     </div>
                   </div>
-                  {action.status !== 'Kapatıldı' && (
+                  {action.status !== 'Kapatıldı' && hasPermission(role, 'action_close') && (
                     <button onClick={() => onCloseAction(action.id)}
                       className="shrink-0 opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded hover:bg-green-100 text-success"
                       title="Kapat">
@@ -153,14 +158,14 @@ export function StoreDrillDown({ store, index, actions, onNewAction, onPrint, on
 
         {/* Butonlar */}
         <div className="space-y-2 pb-2">
-          <button onClick={onKPIUpdate}
+          {canKPI && <button onClick={onKPIUpdate}
             className="w-full py-2.5 bg-slate-100 text-ink font-bold text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-slate-200 transition-all rounded active:scale-95 border border-border">
             <BarChart2 className="w-3.5 h-3.5" /> KPI Verilerini Güncelle
-          </button>
-          <button onClick={onNewAction}
+          </button>}
+          {canAddAction && <button onClick={onNewAction}
             className="w-full py-2.5 bg-ink text-white font-bold text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-accent transition-all rounded active:scale-95">
             <MousePointerClick className="w-3.5 h-3.5" /> Yeni Aksiyon / Ziyaret
-          </button>
+          </button>}
         </div>
       </div>
     </div>

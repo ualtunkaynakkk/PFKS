@@ -123,6 +123,7 @@ function MiniTrend({ snapshots, field, label }: { snapshots: KPISnapshot[]; fiel
 
 // ─── Ana Takip Modülü ─────────────────────────────────────────────────────────
 interface TrackingModuleProps {
+  canAddVisit?: boolean;
   stores: StoreData[];
   allActions: Action[];
   allLogs: VisitLog[];
@@ -135,7 +136,7 @@ interface TrackingModuleProps {
 
 export function TrackingModule({
   stores, allActions, allLogs, kpiSnapshots,
-  getStoreLogs, getStoreSnapshots, onAddVisit, showToast,
+  getStoreLogs, getStoreSnapshots, onAddVisit, showToast, canAddVisit = false,
 }: TrackingModuleProps) {
   const [tab, setTab] = useState<'actions' | 'visits' | 'trends'>('actions');
   const [showVisitForm, setShowVisitForm] = useState(false);
@@ -181,7 +182,7 @@ export function TrackingModule({
             </button>
           ))}
         </div>
-        {tab === 'visits' && (
+        {tab === 'visits' && canAddVisit && (
           <button onClick={() => setShowVisitForm(true)}
             className="px-3 py-1.5 bg-accent text-white text-[10px] font-bold rounded uppercase flex items-center gap-1.5 hover:bg-blue-700 transition-colors">
             <Plus className="w-3 h-3" /> Ziyaret Ekle

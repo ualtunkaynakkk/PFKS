@@ -114,6 +114,7 @@ function StoreTableRow({ store, calcIndex, selected, onSelect }: {
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 interface StoreTableProps {
+  showRegionFilter?: boolean;
   stores: StoreData[];
   selectedId: string;
   calcIndex: (s: StoreData) => number;
@@ -131,7 +132,7 @@ export function StoreTable({
   stores, selectedId, calcIndex, onSelect,
   activeTab, onTabChange,
   regionFilter, onRegionChange,
-  selectedStore, dailySlots, onIntervention,
+  selectedStore, dailySlots, onIntervention, showRegionFilter = true,
 }: StoreTableProps) {
   return (
     <div className="bg-panel flex flex-col overflow-hidden">
@@ -141,7 +142,7 @@ export function StoreTable({
           <Store className="w-3 h-3" /> Mağaza Performans Matrisi
         </h2>
         <div className="flex items-center gap-1.5 flex-wrap">
-          <RegionFilterBar active={regionFilter} onChange={onRegionChange} />
+          {showRegionFilter && <RegionFilterBar active={regionFilter} onChange={onRegionChange} />}
           <div className="flex gap-1">
             {(['overview', 'daily'] as TabType[]).map(tab => (
               <button key={tab} onClick={() => onTabChange(tab)}
