@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
-import { Activity, LayoutDashboard, Store, Activity as TrackIcon, Loader2 } from 'lucide-react';
+import { Activity, LayoutDashboard, Store, BarChart2, Loader2 } from 'lucide-react';
 
 import type { RegionFilter, TabType, ModalType, NewActionForm, AppView, KPIUpdateForm } from './types';
 import { getDailySlots } from './data/stores';
@@ -23,37 +23,48 @@ export default function App() {
   const [regionFilter, setRegionFilter] = useState<RegionFilter>('Tümü');
   const [toast, setToast] = useState<string | null>(null);
 
-  const { stores, filteredStores, regionSummary, loading: storesLoading, error: storesError, calcIndex, addStore, updateStore, updateKPI, removeStore, restoreStore } = useStores(regionFilter);
-  const { storeActions, allActions, openCount, closureRate, addAction, closeAction } = useActions(selectedStoreId);
-  const { allLogs, kpiSnapshots, getStoreLogs, getStoreSnapshots, addVisitLog, addKpiSnapshot } = useVisitLogs();
+  // ── Data hooks ──────────────────────────────────────────────────────────────
+  const {
+    stores, filteredStores, regionSummary,
+    loading: storesLoading, error: storesError,
+    calcIndex, addStore, updateStore, updateKPI, removeStore, restoreStore,
+  } = useStores(regionFilter);
 
-  // Stores yüklendiğinde ilk mağazayı otomatik seç
   const activeStores = useMemo(() => stores.filter(s => s.isActive), [stores]);
-  
+
+  // Stores yüklenince ilk mağazayı (tercihen M402) seç
   useEffect(() => {
-    if (!selectedStoreId && activeStores.length > 0) {
-      // Zorlu Center'ı (M402 - danger mağazası) varsayılan seç, yoksa ilkini al
+    if (activeStores.length > 0 && !selectedStoreId) {
       const zorlu = activeStores.find(s => s.code === 'M402');
       setSelectedStoreId(zorlu?.id ?? activeStores[0].id);
     }
-  }, [activeStores, selectedStoreId]);
+  }, [activeStores.length]); // eslint-disable-line
 
   const selectedStore = useMemo(
-    () => activeStores.find(s => s.id === selectedStoreId) ?? activeStores[0],
+    () => activeStores.find(s => s.id === selectedStoreId) ?? activeStores[0] ?? null,
     [activeStores, selectedStoreId]
   );
-  const selectedIndex = useMemo(() => selectedStore ? calcIndex(selectedStore) : 0, [selectedStore, calcIndex]);
+
+  const { storeActions, allActions, openCount, closureRate, addAction, closeAction } = useActions(selectedStoreId);
+  const { allLogs, kpiSnapshots, getStoreLogs, getStoreSnapshots, addVisitLog, addKpiSnapshot } = useVisitLogs();
+
+  const selectedIndex = useMemo(
+    () => (selectedStore ? calcIndex(selectedStore) : 0),
+    [selectedStore, calcIndex]
+  );
   const dailySlots = useMemo(() => getDailySlots(selectedStoreId || ''), [selectedStoreId]);
 
+  // ── Helpers ─────────────────────────────────────────────────────────────────
   const showToast = (msg: string) => {
     setToast(msg);
     setTimeout(() => setToast(null), 3500);
   };
 
   const handleSaveAction = async (form: NewActionForm) => {
+    if (!selectedStore) return;
     await addAction(form, selectedStoreId);
     setActiveModal('none');
-    showToast(`Aksiyon kaydedildi — ${selectedStore.name} mağazasına iletildi.`);
+    showToast(`Aksiyon kaydedildi — ${selectedStore.name}`);
   };
 
   const handleIntervention = (note: string) => {
@@ -67,6 +78,7 @@ export default function App() {
   };
 
   const handleKPIUpdate = async (form: KPIUpdateForm) => {
+    if (!selectedStore) return;
     await updateKPI(selectedStoreId, form);
     await addKpiSnapshot({
       storeId: selectedStoreId,
@@ -74,26 +86,16 @@ export default function App() {
       ...form,
     });
     setActiveModal('none');
-    showToast(`${selectedStore.name} KPI verileri güncellendi.`);
+    showToast(`${selectedStore.name} KPI güncellendi.`);
   };
 
-  const NAV_ITEMS = [
-    { id: 'dashboard' as AppView, label: 'Dashboard', icon: LayoutDashboard },
-    { id: 'stores' as AppView, label: 'Mağaza Yönetimi', icon: Store },
-    { id: 'tracking' as AppView, label: 'Takip & Geçmiş', icon: TrackIcon },
-  ];
-
-
-  // Loading ekranı
-  if (storesLoading || (!selectedStore && stores.length > 0 && activeStores.length > 0)) {
+  // ── Loading / Error ─────────────────────────────────────────────────────────
+  if (storesLoading) {
     return (
-      <div className="flex flex-col h-screen overflow-hidden bg-bg">
+      <div className="flex flex-col h-screen bg-bg">
         <header className="h-[50px] bg-ink text-white flex items-center px-5 border-b-2 border-accent shrink-0">
           <Activity className="w-5 h-5 text-accent mr-3" />
-          <h1 className="text-sm font-bold tracking-widest uppercase">
-            PFKS <span className="text-accent opacity-50 mx-1">//</span>
-            <span className="font-normal opacity-80 text-xs">Penti Bölge Yönetim Paneli</span>
-          </h1>
+          <h1 className="text-sm font-bold tracking-widest uppercase">PFKS</h1>
         </header>
         <div className="flex-1 flex flex-col items-center justify-center gap-4">
           <Loader2 className="w-8 h-8 text-accent animate-spin" />
@@ -105,15 +107,16 @@ export default function App() {
 
   if (storesError) {
     return (
-      <div className="flex flex-col h-screen overflow-hidden bg-bg">
+      <div className="flex flex-col h-screen bg-bg">
         <header className="h-[50px] bg-ink text-white flex items-center px-5 border-b-2 border-accent shrink-0">
           <Activity className="w-5 h-5 text-accent mr-3" />
           <h1 className="text-sm font-bold tracking-widest uppercase">PFKS</h1>
         </header>
-        <div className="flex-1 flex flex-col items-center justify-center gap-3">
+        <div className="flex-1 flex flex-col items-center justify-center gap-3 p-6 text-center">
           <p className="text-sm font-bold text-danger">Bağlantı hatası</p>
           <p className="text-xs text-slate-400">{storesError}</p>
-          <button onClick={() => window.location.reload()} className="px-4 py-2 bg-accent text-white text-xs font-bold rounded uppercase mt-2">
+          <button onClick={() => window.location.reload()}
+            className="mt-2 px-4 py-2 bg-accent text-white text-xs font-bold rounded uppercase">
             Yeniden Dene
           </button>
         </div>
@@ -121,6 +124,30 @@ export default function App() {
     );
   }
 
+  // Stores yüklendi ama selectedStore henüz seçilmedi (useEffect henüz çalışmadı)
+  if (!selectedStore) {
+    return (
+      <div className="flex flex-col h-screen bg-bg">
+        <header className="h-[50px] bg-ink text-white flex items-center px-5 border-b-2 border-accent shrink-0">
+          <Activity className="w-5 h-5 text-accent mr-3" />
+          <h1 className="text-sm font-bold tracking-widest uppercase">PFKS</h1>
+        </header>
+        <div className="flex-1 flex flex-col items-center justify-center gap-4">
+          <Loader2 className="w-8 h-8 text-accent animate-spin" />
+          <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Hazırlanıyor...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // ── Nav ─────────────────────────────────────────────────────────────────────
+  const NAV_ITEMS = [
+    { id: 'dashboard' as AppView, label: 'Dashboard',        icon: LayoutDashboard },
+    { id: 'stores'   as AppView, label: 'Mağazalar',         icon: Store           },
+    { id: 'tracking' as AppView, label: 'Takip & Geçmiş',   icon: BarChart2       },
+  ];
+
+  // ── Render ──────────────────────────────────────────────────────────────────
   return (
     <div className="flex flex-col h-screen overflow-hidden relative">
 
@@ -129,62 +156,66 @@ export default function App() {
         {toast && (
           <motion.div
             initial={{ opacity: 0, y: -40 }} animate={{ opacity: 1, y: 20 }} exit={{ opacity: 0, y: -40 }}
-            className="fixed top-0 left-1/2 -translate-x-1/2 z-[150] bg-ink text-white px-6 py-3 rounded-full shadow-2xl border border-accent font-bold text-xs flex items-center gap-2"
+            className="fixed top-0 left-1/2 -translate-x-1/2 z-[150] bg-ink text-white px-5 py-2.5 rounded-full shadow-2xl border border-accent font-bold text-xs flex items-center gap-2 max-w-[90vw]"
           >
-            <Activity className="w-4 h-4 text-accent" />
-            {toast}
+            <Activity className="w-3.5 h-3.5 text-accent shrink-0" />
+            <span className="truncate">{toast}</span>
           </motion.div>
         )}
       </AnimatePresence>
 
       {/* Modals */}
       <AnimatePresence>
-        {activeModal === 'new_action' && selectedStore && (
+        {activeModal === 'new_action' && (
           <NewActionModal store={selectedStore} onClose={() => setActiveModal('none')} onSave={handleSaveAction} />
         )}
-        {activeModal === 'intervention' && selectedStore && (
+        {activeModal === 'intervention' && (
           <InterventionModal store={selectedStore} onClose={() => setActiveModal('none')} onSend={handleIntervention} />
         )}
-        {activeModal === 'print_preview' && selectedStore && (
+        {activeModal === 'print_preview' && (
           <PrintPreviewModal store={selectedStore} index={selectedIndex} onClose={() => setActiveModal('none')} />
         )}
-        {activeModal === 'kpi_update' && selectedStore && (
+        {activeModal === 'kpi_update' && (
           <KPIUpdateModal store={selectedStore} onClose={() => setActiveModal('none')} onSave={handleKPIUpdate} />
         )}
       </AnimatePresence>
 
       {/* Header */}
-      <header className="h-[50px] bg-ink text-white flex items-center justify-between px-5 border-b-2 border-accent shrink-0">
-        <div className="flex items-center gap-3">
-          <Activity className="w-5 h-5 text-accent" />
-          <h1 className="text-sm sm:text-base font-bold tracking-widest uppercase">
-            PFKS <span className="text-accent opacity-50 mx-1">//</span>
-            <span className="font-normal opacity-80 text-xs hidden sm:inline">Penti Bölge Yönetim Paneli</span>
+      <header className="h-[50px] bg-ink text-white flex items-center justify-between px-4 border-b-2 border-accent shrink-0">
+        <div className="flex items-center gap-2.5">
+          <Activity className="w-4 h-4 text-accent" />
+          <h1 className="text-sm font-bold tracking-widest uppercase">
+            PFKS
+            <span className="text-accent opacity-40 mx-1.5">//</span>
+            <span className="font-normal opacity-70 text-[11px] hidden sm:inline">Penti Bölge Paneli</span>
           </h1>
         </div>
-        {/* Navigation */}
+
+        {/* Navigasyon */}
         <nav className="flex items-center gap-0.5">
           {NAV_ITEMS.map(({ id, label, icon: Icon }) => (
-            <button key={id} onClick={() => setView(id)}
-              title={label}
-              className={`flex items-center gap-1.5 px-2.5 py-2 sm:px-3 sm:py-1.5 rounded text-[10px] font-bold uppercase transition-all ${
+            <button key={id} onClick={() => setView(id)} title={label}
+              className={`flex items-center gap-1.5 px-3 py-2 rounded text-[10px] font-bold uppercase transition-all ${
                 view === id ? 'bg-accent text-white' : 'text-white/60 hover:text-white hover:bg-white/10'
               }`}>
-              <Icon className="w-4 h-4 sm:w-3 sm:h-3" />
-              <span className="hidden md:inline">{label}</span>
+              <Icon className="w-4 h-4" />
+              <span className="hidden lg:inline">{label}</span>
             </button>
           ))}
         </nav>
-        <div className="text-[10px] font-mono opacity-60 hidden lg:flex items-center gap-3 uppercase tracking-tighter">
-          <span>{new Date().toLocaleDateString('tr-TR', { day: '2-digit', month: '2-digit', year: 'numeric' })}</span>
+
+        <div className="text-[9px] font-mono opacity-50 hidden xl:flex items-center gap-2 uppercase">
+          <span>{new Date().toLocaleDateString('tr-TR')}</span>
           <span className="text-accent">|</span>
           <span>{regionSummary.total} Mağaza</span>
           <span className="text-accent">|</span>
-          <span className={`font-black ${openCount > 0 ? 'text-warning' : 'text-success'}`}>{openCount} Açık Aksiyon</span>
+          <span className={openCount > 0 ? 'text-warning font-black' : 'text-success font-black'}>
+            {openCount} Açık Aksiyon
+          </span>
         </div>
       </header>
 
-      {/* KPI Bar — sadece dashboard'da */}
+      {/* KPI Bar — sadece dashboard */}
       {view === 'dashboard' && (
         <KPIBar
           avgCiro={regionSummary.avgCiro}
@@ -195,10 +226,10 @@ export default function App() {
         />
       )}
 
-      {/* Main Content */}
+      {/* Ana İçerik */}
       <main className="flex-1 overflow-hidden flex">
         {view === 'dashboard' && (
-          <div className="flex-1 grid grid-cols-1 lg:grid-cols-[1fr_400px] xl:grid-cols-[650px_1fr] bg-border gap-[1px] overflow-hidden">
+          <div className="flex-1 grid grid-cols-1 lg:grid-cols-[1fr_380px] xl:grid-cols-[600px_1fr] bg-border gap-[1px] overflow-hidden">
             <StoreTable
               stores={filteredStores}
               selectedId={selectedStoreId}
@@ -249,7 +280,7 @@ export default function App() {
         )}
       </main>
 
-      <AlarmTicker stores={stores.filter(s => s.isActive)} />
+      <AlarmTicker stores={activeStores} />
     </div>
   );
 }
