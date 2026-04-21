@@ -163,14 +163,15 @@ export default function App() {
           </h1>
         </div>
         {/* Navigation */}
-        <nav className="flex items-center gap-1">
+        <nav className="flex items-center gap-0.5">
           {NAV_ITEMS.map(({ id, label, icon: Icon }) => (
             <button key={id} onClick={() => setView(id)}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded text-[10px] font-bold uppercase transition-all ${
+              title={label}
+              className={`flex items-center gap-1.5 px-2.5 py-2 sm:px-3 sm:py-1.5 rounded text-[10px] font-bold uppercase transition-all ${
                 view === id ? 'bg-accent text-white' : 'text-white/60 hover:text-white hover:bg-white/10'
               }`}>
-              <Icon className="w-3 h-3" />
-              <span className="hidden sm:inline">{label}</span>
+              <Icon className="w-4 h-4 sm:w-3 sm:h-3" />
+              <span className="hidden md:inline">{label}</span>
             </button>
           ))}
         </nav>

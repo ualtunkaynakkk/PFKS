@@ -9,44 +9,51 @@ interface KPIBarProps {
 export function KPIBar({ avgCiro, avgConversion, avgUpt, openCount, closureRate }: KPIBarProps) {
   const kpis = [
     {
-      label: 'BÖLGE CİRO ORTALAMASI',
+      label: 'CİRO',
+      labelFull: 'BÖLGE CİRO ORTALAMASI',
       value: `%${avgCiro}`,
-      trend: avgCiro >= 100 ? `▲ Hedefe ulaşıldı` : `▼ %${100 - avgCiro} hedef açığı`,
+      trend: avgCiro >= 100 ? `▲ Hedefe ulaşıldı` : `▼ %${100 - avgCiro} açık`,
       positive: avgCiro >= 100,
     },
     {
-      label: 'FBA (Fatura Başına Adet)',
+      label: 'FBA',
+      labelFull: 'FBA (Fatura Başına Adet)',
       value: avgUpt,
-      trend: parseFloat(avgUpt) >= 2.2 ? '▲ Hedef üzerinde' : '▼ Hedef altında',
+      trend: parseFloat(avgUpt) >= 2.2 ? '▲ Hedef üzeri' : '▼ Hedef altı',
       positive: parseFloat(avgUpt) >= 2.2,
     },
     {
-      label: 'DÖNÜŞÜM ORANI',
+      label: 'DÖNÜŞÜM',
+      labelFull: 'DÖNÜŞÜM ORANI',
       value: `%${avgConversion}`,
-      trend: parseFloat(avgConversion) >= 20 ? '▲ İyi seviye' : '● Gelişim alanı',
+      trend: parseFloat(avgConversion) >= 20 ? '▲ İyi' : '● Gelişim',
       positive: parseFloat(avgConversion) >= 20 ? true : null,
     },
     {
-      label: 'AÇIK AKSİYONLAR',
+      label: 'AKSİYON',
+      labelFull: 'AÇIK AKSİYONLAR',
       value: `${openCount}`,
-      trend: openCount === 0 ? '✓ Temiz tablo' : `${openCount} aksiyon bekliyor`,
+      trend: openCount === 0 ? '✓ Temiz' : `${openCount} bekliyor`,
       positive: openCount === 0,
     },
     {
-      label: 'AKSİYON KAPATMA %',
+      label: 'KAPATMA',
+      labelFull: 'AKSİYON KAPATMA %',
       value: `%${closureRate}`,
-      trend: closureRate >= 80 ? '▲ Yüksek disiplin' : '▼ Takip gerekli',
+      trend: closureRate >= 80 ? '▲ Disiplinli' : '▼ Takip et',
       positive: closureRate >= 80,
     },
   ];
 
   return (
-    <section className="grid grid-cols-2 lg:grid-cols-5 gap-[1px] bg-border h-auto lg:h-[90px] shrink-0 border-b border-border">
+    <section className="flex overflow-x-auto shrink-0 border-b border-border bg-border gap-[1px] scrollbar-none" style={{scrollbarWidth:'none'}}>
       {kpis.map((kpi, i) => (
-        <div key={i} className="bg-panel p-4 flex flex-col justify-center">
-          <span className="text-[10px] uppercase text-slate-500 font-bold mb-1">{kpi.label}</span>
-          <span className="text-xl font-bold font-mono text-ink leading-none">{kpi.value}</span>
-          <span className={`text-[10px] mt-1 font-semibold ${
+        <div key={i} className="bg-panel flex-shrink-0 flex-1 min-w-[120px] p-3 flex flex-col justify-center">
+          {/* Mobilde kısa label, büyük ekranda uzun */}
+          <span className="text-[9px] uppercase text-slate-400 font-bold mb-0.5 block sm:hidden leading-tight">{kpi.label}</span>
+          <span className="text-[9px] uppercase text-slate-400 font-bold mb-0.5 hidden sm:block leading-tight">{kpi.labelFull}</span>
+          <span className="text-lg font-bold font-mono text-ink leading-none">{kpi.value}</span>
+          <span className={`text-[9px] mt-0.5 font-semibold truncate ${
             kpi.positive === true ? 'text-success' : kpi.positive === false ? 'text-danger' : 'text-warning'
           }`}>
             {kpi.trend}

@@ -57,3 +57,22 @@
     @apply text-[10px] text-danger mt-1;
   }
 }
+
+/* Scrollbar gizle — KPI bar yatay scroll için */
+.scrollbar-none {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+
+/* Mobil touch iyileştirmeleri */
+@layer base {
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+  input, select, textarea {
+    font-size: 16px; /* iOS zoom'u önle */
+  }
+}

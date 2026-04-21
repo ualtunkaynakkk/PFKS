@@ -32,7 +32,7 @@ export function AlarmTicker({ stores }: AlarmTickerProps) {
       <div className="flex-1 overflow-hidden relative h-full flex items-center">
         <motion.div
           animate={{ x: ['100%', '-100%'] }}
-          transition={{ duration: 40, repeat: Infinity, ease: 'linear' }}
+          transition={{ duration: 50, repeat: Infinity, ease: 'linear' }}
           className="whitespace-nowrap flex gap-8 text-[11px] font-bold text-slate-600"
         >
           {tickerText}
