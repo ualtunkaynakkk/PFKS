@@ -157,29 +157,8 @@ function AuthenticatedApp({ user, role, signOut }: {
     );
   }
 
-  if (activeStores.length === 0) {
-    return (
-      <div className="flex flex-col h-screen bg-bg">
-        <AppHeader user={user} role={role} signOut={signOut} view={view} setView={setView} openCount={0} total={0} />
-        <div className="flex-1 flex flex-col items-center justify-center gap-3 p-6 text-center">
-          <p className="text-sm font-bold text-slate-600">Aktif mağaza bulunamadı</p>
-          <button onClick={() => window.location.reload()} className="px-4 py-2 bg-accent text-white text-xs font-bold rounded uppercase">Yenile</button>
-        </div>
-      </div>
-    );
-  }
-
-  if (!selectedStore) {
-    return (
-      <div className="flex flex-col h-screen bg-bg">
-        <AppHeader user={user} role={role} signOut={signOut} view={view} setView={setView} openCount={openCount} total={regionSummary.total} />
-        <div className="flex-1 flex flex-col items-center justify-center gap-4">
-          <Loader2 className="w-8 h-8 text-accent animate-spin" />
-          <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Hazırlanıyor...</p>
-        </div>
-      </div>
-    );
-  }
+  // Seçili mağaza yok ama sistem çalışmaya devam eder
+  // selectedStore null iken dashboard boş mesaj gösterir, diğer sekmeler çalışır
 
   // ── Render ─────────────────────────────────────────────────────────────────
   return (
@@ -234,7 +213,25 @@ function AuthenticatedApp({ user, role, signOut }: {
 
       {/* Ana İçerik */}
       <main className="flex-1 overflow-hidden flex">
-        {view === 'dashboard' && (
+        {view === 'dashboard' && !selectedStore && (
+          <div className="flex-1 flex flex-col items-center justify-center gap-4 p-8 text-center">
+            <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mb-2">
+              <Store className="w-8 h-8 text-slate-300" />
+            </div>
+            <p className="text-sm font-bold text-slate-600">Henüz aktif mağaza yok</p>
+            <p className="text-xs text-slate-400 max-w-xs">
+              Mağaza Yönetimi sekmesinden yeni mağaza ekleyebilir veya pasif mağazaları aktif edebilirsiniz.
+            </p>
+            {hasPermission(role, 'store_add') && (
+              <button onClick={() => setView('stores')}
+                className="mt-2 px-5 py-2.5 bg-accent text-white text-xs font-bold rounded uppercase hover:bg-blue-700 transition-colors flex items-center gap-2">
+                <Store className="w-3.5 h-3.5" /> Mağaza Yönetimi
+              </button>
+            )}
+          </div>
+        )}
+
+        {view === 'dashboard' && selectedStore && (
           <div className="flex-1 grid grid-cols-1 lg:grid-cols-[1fr_380px] xl:grid-cols-[600px_1fr] bg-border gap-[1px] overflow-hidden">
             <StoreTable
               stores={visibleFilteredStores}

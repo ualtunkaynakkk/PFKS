@@ -309,6 +309,12 @@ export function StoreManagement({ stores, onAdd, onEdit, onRemove, onRestore, sh
                 <div className="flex justify-end gap-3">
                   <button onClick={() => setDeleteConfirm(null)} className="px-3 py-1.5 text-xs font-bold text-slate-500 uppercase">İptal</button>
                   <button onClick={() => {
+                    const activeCount = stores.filter(x => x.isActive).length;
+                    if (activeCount <= 1) {
+                      showToast('En az 1 aktif mağaza olmalıdır.');
+                      setDeleteConfirm(null);
+                      return;
+                    }
                     onRemove(deleteConfirm);
                     showToast(`${s?.name} pasife alındı.`);
                     setDeleteConfirm(null);
