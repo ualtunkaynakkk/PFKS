@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { Activity, LayoutDashboard, Store, Activity as TrackIcon, Loader2 } from 'lucide-react';
 
@@ -17,7 +17,7 @@ import { TrackingModule } from './components/TrackingModule';
 
 export default function App() {
   const [view, setView] = useState<AppView>('dashboard');
-  const [selectedStoreId, setSelectedStoreId] = useState<string>('4');
+  const [selectedStoreId, setSelectedStoreId] = useState<string>('');
   const [activeTab, setActiveTab] = useState<TabType>('overview');
   const [activeModal, setActiveModal] = useState<ModalType>('none');
   const [regionFilter, setRegionFilter] = useState<RegionFilter>('Tümü');
@@ -27,12 +27,23 @@ export default function App() {
   const { storeActions, allActions, openCount, closureRate, addAction, closeAction } = useActions(selectedStoreId);
   const { allLogs, kpiSnapshots, getStoreLogs, getStoreSnapshots, addVisitLog, addKpiSnapshot } = useVisitLogs();
 
+  // Stores yüklendiğinde ilk mağazayı otomatik seç
+  const activeStores = useMemo(() => stores.filter(s => s.isActive), [stores]);
+  
+  useEffect(() => {
+    if (!selectedStoreId && activeStores.length > 0) {
+      // Zorlu Center'ı (M402 - danger mağazası) varsayılan seç, yoksa ilkini al
+      const zorlu = activeStores.find(s => s.code === 'M402');
+      setSelectedStoreId(zorlu?.id ?? activeStores[0].id);
+    }
+  }, [activeStores, selectedStoreId]);
+
   const selectedStore = useMemo(
-    () => stores.find(s => s.id === selectedStoreId) ?? stores.filter(s => s.isActive)[0],
-    [stores, selectedStoreId]
+    () => activeStores.find(s => s.id === selectedStoreId) ?? activeStores[0],
+    [activeStores, selectedStoreId]
   );
-  const selectedIndex = useMemo(() => calcIndex(selectedStore), [selectedStore, calcIndex]);
-  const dailySlots = useMemo(() => getDailySlots(selectedStoreId), [selectedStoreId]);
+  const selectedIndex = useMemo(() => selectedStore ? calcIndex(selectedStore) : 0, [selectedStore, calcIndex]);
+  const dailySlots = useMemo(() => getDailySlots(selectedStoreId || ''), [selectedStoreId]);
 
   const showToast = (msg: string) => {
     setToast(msg);
@@ -74,7 +85,7 @@ export default function App() {
 
 
   // Loading ekranı
-  if (storesLoading) {
+  if (storesLoading || (!selectedStore && stores.length > 0 && activeStores.length > 0)) {
     return (
       <div className="flex flex-col h-screen overflow-hidden bg-bg">
         <header className="h-[50px] bg-ink text-white flex items-center px-5 border-b-2 border-accent shrink-0">
@@ -128,16 +139,16 @@ export default function App() {
 
       {/* Modals */}
       <AnimatePresence>
-        {activeModal === 'new_action' && (
+        {activeModal === 'new_action' && selectedStore && (
           <NewActionModal store={selectedStore} onClose={() => setActiveModal('none')} onSave={handleSaveAction} />
         )}
-        {activeModal === 'intervention' && (
+        {activeModal === 'intervention' && selectedStore && (
           <InterventionModal store={selectedStore} onClose={() => setActiveModal('none')} onSend={handleIntervention} />
         )}
-        {activeModal === 'print_preview' && (
+        {activeModal === 'print_preview' && selectedStore && (
           <PrintPreviewModal store={selectedStore} index={selectedIndex} onClose={() => setActiveModal('none')} />
         )}
-        {activeModal === 'kpi_update' && (
+        {activeModal === 'kpi_update' && selectedStore && (
           <KPIUpdateModal store={selectedStore} onClose={() => setActiveModal('none')} onSave={handleKPIUpdate} />
         )}
       </AnimatePresence>

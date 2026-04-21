@@ -114,7 +114,7 @@ export function useActions(selectedStoreId: string) {
   }, [load]);
 
   const storeActions = useMemo(
-    () => actions.filter(a => a.storeId === selectedStoreId),
+    () => selectedStoreId ? actions.filter(a => a.storeId === selectedStoreId) : [],
     [actions, selectedStoreId]
   );
 
