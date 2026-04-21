@@ -16,29 +16,42 @@ const AuthContext = createContext<AuthContextValue>({
   signOut: async () => {},
 });
 
-export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<AuthUser | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  async function loadProfile(userId: string, email: string): Promise<AuthUser | null> {
+async function loadProfile(userId: string, email: string): Promise<AuthUser | null> {
+  // Retry mekanizması — session tam oturmadan önce profil çekilemeyebilir
+  for (let attempt = 0; attempt < 3; attempt++) {
     const { data, error } = await supabase
       .from('pfks_profiles')
       .select('id, full_name, role, store_id, is_active')
       .eq('id', userId)
       .single();
 
-    if (error || !data) return null;
+    if (data) {
+      const profile: PfksProfile = {
+        id: data.id,
+        fullName: data.full_name,
+        role: data.role as PfksRole,
+        storeId: data.store_id,
+        isActive: data.is_active,
+      };
+      return { id: userId, email, profile };
+    }
 
-    const profile: PfksProfile = {
-      id: data.id,
-      fullName: data.full_name,
-      role: data.role as PfksRole,
-      storeId: data.store_id,
-      isActive: data.is_active,
-    };
+    if (error?.code === 'PGRST116') {
+      // Profil henüz oluşmamış — kısa bekle
+      await new Promise(r => setTimeout(r, 300 * (attempt + 1)));
+      continue;
+    }
 
-    return { id: userId, email, profile };
+    // Başka bir hata — devam etme
+    console.error('loadProfile error:', error);
+    break;
   }
+  return null;
+}
+
+export function AuthProvider({ children }: { children: ReactNode }) {
+  const [user, setUser] = useState<AuthUser | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     // Mevcut oturumu kontrol et
@@ -52,21 +65,33 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     // Auth state değişimlerini dinle
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (session?.user) {
+      if (event === 'SIGNED_IN' && session?.user) {
         const authUser = await loadProfile(session.user.id, session.user.email ?? '');
         setUser(authUser);
-      } else {
+        setLoading(false);
+      } else if (event === 'SIGNED_OUT') {
         setUser(null);
+        setLoading(false);
+      } else if (event === 'INITIAL_SESSION') {
+        // getSession zaten handle ediyor, burada setLoading yapma
       }
-      if (event !== 'INITIAL_SESSION') setLoading(false);
     });
 
     return () => subscription.unsubscribe();
   }, []);
 
   const signIn = async (email: string, password: string): Promise<string | null> => {
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) return error.message;
+    
+    // onAuthStateChange'i beklemeden direkt profil yükle
+    if (data.user) {
+      const authUser = await loadProfile(data.user.id, data.user.email ?? '');
+      if (authUser) {
+        setUser(authUser);
+        setLoading(false);
+      }
+    }
     return null;
   };
 
