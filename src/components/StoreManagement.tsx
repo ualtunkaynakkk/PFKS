@@ -1,3 +1,4 @@
+import { BulkImportModal } from './BulkImportModal';
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
@@ -159,9 +160,10 @@ interface StoreManagementProps {
 
 export function StoreManagement({ stores, onAdd, onEdit, onRemove, onRestore, showToast, canAdd = false, canEdit = false, canDelete = false }: StoreManagementProps) {
   const [search, setSearch] = useState('');
-  const [showInactive, setShowInactive] = useState(false);
+  const [showInactive, setShowInactive] = useState(false); // Pasifler varsayılan gizli
   const [panel, setPanel] = useState<'none' | 'add' | string>('none');
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
+  const [showBulkImport, setShowBulkImport] = useState(false);
 
   const filtered = stores.filter(s => {
     const matchSearch = s.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -187,7 +189,11 @@ export function StoreManagement({ stores, onAdd, onEdit, onRemove, onRestore, sh
             <input type="checkbox" checked={showInactive} onChange={e => setShowInactive(e.target.checked)} className="w-3 h-3" />
             Pasifleri Göster
           </label>
-          {canAdd && <button onClick={() => setPanel('add')}
+          <button onClick={() => setShowBulkImport(true)}
+          className="px-3 py-1.5 bg-slate-700 text-white text-[10px] font-bold rounded uppercase flex items-center gap-1.5 hover:bg-slate-900 transition-colors">
+          <span>📥</span> Excel Yükle
+        </button>
+        {canAdd && <button onClick={() => setPanel('add')}
             className="px-3 py-1.5 bg-accent text-white text-[10px] font-bold rounded uppercase flex items-center gap-1.5 hover:bg-blue-700 transition-colors">
             <Plus className="w-3 h-3" /> Mağaza Ekle
           </button>}
